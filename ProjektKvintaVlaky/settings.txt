@@ -1,0 +1,10 @@
+minimum window sizeX: 500
+minimum window sizeY: 500
+maximum window sizeX: 2000
+maximum window sizeY: 2000
+textures: basicTextures
+size of board X: 100
+size of board Y: 150
+speed of arrows: 0.3
+generate flowers: True
+generate trees: False
