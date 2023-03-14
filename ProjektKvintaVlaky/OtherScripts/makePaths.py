@@ -96,6 +96,7 @@ class MakePaths:
                         elif self.railsMap[i][1][g][k][l] == 3:
                             self.railsMap[i][1][g][k][l] = [1,0]
                             
+                            
     def MakePaths(self):
         self.startingPoints = []
         
@@ -142,21 +143,18 @@ class MakePaths:
                     h+=1
                     
         
+    #zacatek bolesti
     def addtrain(self,pos,Type):
-        if Type == 0:
-            self.trainPaths.append([[pos[0][0],pos[0][1]],[pos[1][0],pos[1][1]],[]])
+        #prida vlak
+        pass
             
     def getPaths(self):
-        positions = []
-        for i in range(len(self.trainPaths)):
-            if self.trainPaths[i][2] != []:
-                positions.append(self.trainPaths[i][2][0])
-                self.trainPaths[i][2].pop(0)
-                
-        return positions
-    
-    def makeNewPaths(self):
-        for i in range(len(self.trainPaths)):
+        #da pozice vlaku
+        ret = []
+        for path in self.paths:
+            ret.append(path[-1][-1])
+            
+        return ret
             
                     
                     
