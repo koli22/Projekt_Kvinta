@@ -173,7 +173,7 @@ class MainClass:
         
     def draw3(self):
         for i in range(len(self.trains)):
-            self.screen.blit(self.trainImages[0][1],(self.trains[i][0]*self.textureSize+200,self.trains[i][1]*self.textureSize))
+            self.screen.blit(self.trainImages[0][1],((self.trains[i][0]+ self.offset[0])*self.textureSize+200,(self.trains[i][1]+ self.offset[1])*self.textureSize))
  
         for i in range(len(self.positions)):
             if self.positions[i][1][0] == 3:
