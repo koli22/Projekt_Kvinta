@@ -1,4 +1,5 @@
 from copy import deepcopy
+from OtherScripts.Algorithm import main
 
 class MakePaths:
     def __init__(self):
@@ -6,6 +7,8 @@ class MakePaths:
         self.Paths = []
         self.phase = 0
         self.trains = []
+        self.calculator = main()
+        self.calculatedPaths = []
         
         #NEW VERSION
         self.trainPaths = []
@@ -142,19 +145,42 @@ class MakePaths:
                 else:
                     h+=1
                     
+        epoints = []
+        for path in self.paths:
+            if epoints.count(str(path[0])) == 0:
+                epoints.append(str(path[0]))
+                
+            if epoints.count(str(path[1])) == 0:
+                epoints.append(str(path[1]))
+                    
+        self.calculator.Points(epoints)
+        paths = []
+        for path in self.paths:
+            paths.append((path[0], path[1], len(path[2])))
+            
+        self.calculator.Paths(paths)
+                    
         
     #zacatek bolesti
     def addtrain(self,pos,Type):
         #prida vlak
-        pass
+        self.trains.append(pos)
             
     def getPaths(self):
         #da pozice vlaku
         ret = []
-        for path in self.paths:
-            ret.append(path[-1][-1])
+        for path in self.calculatedPaths:
+            ret.append()
             
         return ret
+    
+    def calcPaths(self):
+        trains = []
+        for train in self.trains):
+            trains.append((str(train[0]), str(train[1])))
+            
+        self.calculatedPaths = self.calculator.Calculate(trains)
+         
             
                     
                     
