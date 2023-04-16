@@ -39,6 +39,7 @@ class main:
         for start, end in vehicles:
             path = self.dijkstra(start, end)
             vehicle_paths.append(path)
+            
         return vehicle_paths
 
     def dijkstra(self,start, end):
@@ -63,4 +64,3 @@ m = main()
 m.Points(["A", "B", "C", "D"])
 m.Paths([("A", "B", 5)])
 paths = m.Calculate([("A", "B"), ("B", "A")])
-print(paths) # Output: [['A', 'C'], ['B', 'C', 'D']]
