@@ -1,5 +1,6 @@
 from copy import deepcopy
 from OtherScripts.Algorithm import main
+import time
 
 class MakePaths:
     def __init__(self):
@@ -10,8 +11,12 @@ class MakePaths:
         self.calculator = main()
         self.calculatedPaths = []
         
-        #NEW VERSION
+        #NEW VERSION (is fucked up)
         self.trainPaths = []
+        self.trainsadded = []
+        self.move = 0
+        self.orders = []
+        self.lastTime = 0
         
     def NewMap(self,blocks):
         self.rails = []
@@ -147,39 +152,249 @@ class MakePaths:
                     
         epoints = []
         for path in self.paths:
-            if epoints.count(str(path[0])) == 0:
-                epoints.append(str(path[0]))
+            if epoints.count(str(path[0][0]) + "," + str(path[0][1])) == 0:
+                epoints.append(str(path[0][0]) + "," + str(path[0][1]))
                 
-            if epoints.count(str(path[1])) == 0:
-                epoints.append(str(path[1]))
+            if epoints.count(str(path[1][0]) + "," + str(path[1][1])) == 0:
+                epoints.append(str(path[1][0]) + "," + str(path[1][1]))
                     
         self.calculator.Points(epoints)
         paths = []
         for path in self.paths:
-            paths.append((path[0], path[1], len(path[2])))
+            paths.append((str(path[0][0]) + "," + str(path[0][1]), str(path[1][0]) + "," + str(path[1][1]), len(path[2])))
             
         self.calculator.Paths(paths)
                     
         
     #zacatek bolesti
-    def addtrain(self,pos,Type):
-        #prida vlak
-        self.trains.append(pos)
-            
-    def getPaths(self):
-        #da pozice vlaku
-        ret = []
-        for path in self.calculatedPaths:
-            ret.append()
-            
-        return ret
     
-    def calcPaths(self):
+    def GetPathsForTrains(self):
         trains = []
-        for train in self.trains):
-            trains.append((str(train[0]), str(train[1])))
+        for i in range(len(self.trainsadded)):
+            trains.append((str(self.trainsadded[i][0][0]) + "," + str(self.trainsadded[i][0][1]) ,str(self.trainsadded[i][1][0]) + "," + str(self.trainsadded[i][1][1])))
             
-        self.calculatedPaths = self.calculator.Calculate(trains)
+            
+        for train in self.trainsadded:
+            end = train[0]
+            train[0] = train[1]
+            train[1] = end
+            
+        return self.calculator.Calculate(trains)
+    
+    def createOrders(self):
+        self.lastTime = 0
+        self.move = -1
+        paths = self.GetPathsForTrains()
+        orders = []
+        
+        for path in paths:
+            
+            if path == None:
+                continue
+            
+            order = []
+            longorder = []
+            
+            for g in range(len(path) - 1):
+                for Path in self.paths:
+                    if Path[0] == [int(path[0 + g].split(",")[0]),int(path[0 + g].split(",")[1])] and Path[1] == [int(path[1 + g].split(",")[0]),int(path[1 + g].split(",")[1])]:
+                        order = deepcopy(Path[2])
+                        
+                for orde in order:
+                    if len(longorder) > 0:
+                        if longorder[-1] != orde:
+                            longorder.append(deepcopy(orde))
+                    else:
+                        longorder.append(deepcopy(orde))
+                    
+            orders.append(deepcopy(longorder))
+            
+            
+            startingRotation = self.getPossibleRotations(orders[-1][0], 0, 0, 0)[0];
+            orders[-1][0] = [orders[-1][0][0] , orders[-1][0][1], startingRotation]
+            
+            prev = startingRotation
+            
+            _len = len(orders[-1]) - 2
+        
+        
+            for i in range(len(orders[-1]) - 1):
+                posRot1 = startingRotation - 1;
+                posRot2 = startingRotation + 1;
+            
+                if posRot1 < 0:
+                    posRot1+= 8;
+            
+                if posRot2 > 7:
+                    posRot2 -= 8;
+                    
+                _next = orders[-1]
+                _now = orders[-1]
+                
+                if i < _len:
+                    _next = orders[-1][i + 2]
+                    
+                if i < _len + 1:
+                    _now = orders[-1][i]
+                
+                rotations = self.getPossibleRotations(orders[-1][i + 1], prev, _next, _now)
+                
+                if len(rotations) == 4:
+                    if rotations[0] == posRot1 or rotations[0] == posRot2:
+                        startingRotation = rotations[0]
+                        prev = rotations[2]
+                    else:
+                        startingRotation = rotations[1]
+                        prev = rotations[3]
+                    
+
+                else:
+                    if rotations[0] == startingRotation or rotations[1] == startingRotation:
+                        pass
+                    elif rotations[0] == posRot1 or rotations[0] == posRot2:
+                        startingRotation = rotations[0]
+                    else:
+                        startingRotation = rotations[1]
+                        
+                    prev = startingRotation
+                
+                orders[-1][i + 1] = [orders[-1][i + 1][0] , orders[-1][i + 1][1], startingRotation]
+            
+        self.orders = orders
+        
+        
+    def GetOrders(self):
+        if (round(time.time()) != self.lastTime):
+            if self.lastTime != 0:
+                self.move += round(time.time()) - self.lastTime
+                self.lastTime = round(time.time())
+            else:
+                self.move += 1
+                self.lastTime = round(time.time())
+                
+        ret = []
+        
+        for order in self.orders:
+            if len(order) < self.move + 1:
+                ret.append(order[-1])
+            else:
+                ret.append(order[self.move])
+                
+                
+        return ret
+            
+            
+    
+    
+    
+    def AddTrain(self,xy,gej):
+        x = xy[0]
+        y = xy[1]
+        
+        
+        if self.has(self.trainsadded, x) != True and self.has(self.trainsadded, y) != True:
+            self.trainsadded.append([x,y])
+            
+            self.orders.append([[x[0], x[1], self.getPossibleRotations(x, 0, 0, 0)[0]]])
+    
+    def RemoveTrain(self,x):
+        if self.has(self.trainsadded, x) == True:
+            self.trainsadded = self._del(self.trainsadded, x)
+
+        
+    def has(self,_list,x): 
+        for i in range(len(_list)): 
+            if _list[i][0] == x or _list[i][1] == x: 
+                return True
+        
+    def _del(self,_list,x): 
+        for i in _list: 
+            if i[0] == x:
+                _list.pop(i)
+        return
+    
+    def Clear(self):
+        self.orders = []
+        
+        
+    def getPossibleRotations(self, position, prev, _next, _now):
+        blok = self.rails[position[0]][position[1]]
+        if blok[0] == 1 or blok[0] == 3:
+            if blok[1] == 0:
+                return [5, 1]
+            elif blok[1] == 1:
+                return [7, 3]
+        if blok[0] == 4:
+            if prev == 1 or prev == 5: 
+                return [1,5]
+            elif prev == 7 or prev == 3:
+                return [3,7]
+        if blok[0] == 2:
+            if blok[1] == 0:
+                if prev == 7 or prev == 3:
+                    return [4, 8, 5, 1]
+                else:
+                    return [4, 8, 3, 7]  
+                
+            if blok[1] == 1:
+                if prev == 7 or prev == 3:
+                    return [6, 2, 1, 5]  
+                else:
+                    return [6, 2, 7, 3]  
+            
+            if blok[1] == 2:
+                if prev == 3 or prev == 1:
+                    return [4, 8, 5, 7]  
+                else:
+                    return [4, 8, 3, 1]  
+            
+            if blok[1] == 3:
+                if prev == 1 or prev == 7:
+                    return [2, 6, 7, 1]  
+                else:
+                    return [2, 6, 1, 7]  
+            
+        print(_now, _next)
+        if blok[0] == 5 and _now[0] != _next[0] and _now[1] != _next[1]:
+            print("tocna")
+            if blok[1] == 0:
+                if prev == 7 or prev == 3:
+                    return [4, 8, 5, 1]
+                else:
+                    return [4, 8, 3, 7]  
+                
+            if blok[1] == 1:
+                if prev == 7 or prev == 3:
+                    return [6, 2, 1, 5]  
+                else:
+                    return [6, 2, 7, 3]  
+            
+            if blok[1] == 2:
+                if prev == 3 or prev == 1:
+                    return [4, 8, 5, 7]  
+                else:
+                    return [4, 8, 3, 1]  
+            
+            if blok[1] == 3:
+                if prev == 1 or prev == 7:
+                    return [2, 6, 7, 1]  
+                else:
+                    return [2, 6, 1, 7]  
+        
+        elif blok[0] == 5 and (_now[0] == _next[0] or _now[1] == _next[1]):
+            if blok[1] == 0 or blok[1] == 1 or blok[1] == 2 or blok[1] == 3:
+                return [5, 1]
+            else:           
+                return [7, 3]
+            
+        return [0,0]
+    
+    def ClearAll(self):
+        self.trainsadded = []
+        self.orders = []
+    
+    
+    
          
             
                     
