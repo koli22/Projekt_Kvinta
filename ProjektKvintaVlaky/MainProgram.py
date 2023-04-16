@@ -6,6 +6,7 @@ from OtherScripts.makePaths import MakePaths
 import os
 import sys
 import time
+from copy import deepcopy
 
 class MainClass:
     def __init__(self):
@@ -41,6 +42,8 @@ class MainClass:
         
         self.makePaths = MakePaths()
         self.ctrl = False
+        
+        self.selectedSquares = [0, 0]
         
         
         
@@ -173,7 +176,7 @@ class MainClass:
         
     def draw3(self):
         for i in range(len(self.trains)):
-            self.screen.blit(self.trainImages[0][1],((self.trains[i][0]+ self.offset[0])*self.textureSize+200,(self.trains[i][1]+ self.offset[1])*self.textureSize))
+            self.screen.blit(self.trainImages[0][self.trains[i][2]],((self.trains[i][0]+ self.offset[0])*self.textureSize+200,(self.trains[i][1]+ self.offset[1])*self.textureSize))
  
         for i in range(len(self.positions)):
             if self.positions[i][1][0] == 3:
@@ -183,8 +186,8 @@ class MainClass:
         if self.pickedTrain == 0: self.screen.blit(pygame.image.load("textures/"+self.settings[1]+"/"+"selectTrain"+".png"),(123,18))
         elif self.pickedTrain == 1: self.screen.blit(pygame.image.load("textures/"+self.settings[1]+"/"+"selectTrain"+".png"),(123,78))
         
-        self.screen.blit(self.trainImages[self.selectedTrain%len(self.trainImages)][0],(125,20))
-        self.screen.blit(self.trainImages[self.selectedTrain%len(self.trainImages)][0],(125,80))
+        self.screen.blit(pygame.image.load("textures/"+self.settings[1]+"/trains/trainPreview2.png"),(125,20))
+        self.screen.blit(pygame.image.load("textures/"+self.settings[1]+"/trains/trainPreview3.png"),(125,80))
         
 
     def drawMouse(self):
@@ -204,6 +207,12 @@ class MainClass:
             self.screen.blit(self.semafory[self.positions[i][1][2]][self.positions[i][1][3]],((self.positions[i][0][0] + self.offset[0]) * self.textureSize + 200, (self.positions[i][0][1] + self.offset[1])*self.textureSize))
         self.draw3()
         self.drawMouse()
+        
+        if self.selectedSquares[0] != 0:
+            self.screen.blit(pygame.image.load("textures/"+self.settings[1]+"/"+"mouse2"+".png"),(self.selectedSquares[0][0]*self.textureSize+200,self.selectedSquares[0][1]*self.textureSize))
+        if self.selectedSquares[1] != 0:
+            self.screen.blit(pygame.image.load("textures/"+self.settings[1]+"/"+"mouse3"+".png"),(self.selectedSquares[1][0]*self.textureSize+200,self.selectedSquares[1][1]*self.textureSize))
+            
         pygame.display.flip()
 
     def startSimulation(self):
@@ -233,30 +242,27 @@ class MainClass:
         while self.simulaceON == True:
             self.GetInputs()
             self.MoveOnBoard()
-            self.trains = self.makePaths.getPaths()
+            self.trains = self.makePaths.GetOrders()
             self.simulaceDraw()
-            time.sleep(1)
             
     def PlaceTrains(self):                    
         self.mousePosition = pygame.mouse.get_pos()
         if self.mousePosition[0] > 200 or self.mousePosition[1] > 148:
             self.clickedSquare = (int(((self.mousePosition[0] - 200 - self.offset[0]*self.textureSize) - (self.mousePosition[0] -200 - self.offset[0]*self.textureSize)%self.textureSize)/self.textureSize), int((self.mousePosition[1] - self.offset[1]*self.textureSize - (self.mousePosition[1] - self.offset[1]*self.textureSize)%self.textureSize)/self.textureSize))
             
-            pos = [self.clickedSquare,0]
-            clicked = 0
-            while clicked == 0:
-                for event in pygame.event.get():
-                    if event.type == MOUSEBUTTONDOWN:
-                        clicked = 1
-
-            self.mousePosition = pygame.mouse.get_pos()
-            if self.mousePosition[0] > 200 or self.mousePosition[1] > 148:
-                self.clickedSquare = (int(((self.mousePosition[0] - 200 - self.offset[0]*self.textureSize) - (self.mousePosition[0] -200 - self.offset[0]*self.textureSize)%self.textureSize)/self.textureSize), int((self.mousePosition[1] - self.offset[1]*self.textureSize - (self.mousePosition[1] - self.offset[1]*self.textureSize)%self.textureSize)/self.textureSize))
+            square = self.positions[self.itoxy[self.clickedSquare[0]][self.clickedSquare[1]]]
             
-                pos[1] = self.clickedSquare
-                
-                self.makePaths.addtrain(pos,self.selectedTrain)
-                
+            if square[1][0] == 3:
+                if self.pickedTrain == 0:
+                    self.selectedSquares[0] = self.clickedSquare
+                    
+                else:
+                    self.selectedSquares[1] = self.clickedSquare
+                    
+                if self.selectedSquares[0] != 0 and self.selectedSquares[1] != 0:
+                    self.makePaths.AddTrain(self.selectedSquares, 0)
+                    self.selectedSquares = [0, 0]
+                            
 
                         
     def GetInputs(self):
@@ -297,7 +303,6 @@ class MainClass:
                         self.selectSquare(0,-1)
                     
                     if event.key == K_p:
-                        #self.startSimulation()
                         self.runSimulation()
                     if event.key == K_m:
                         self.askForSave()
@@ -313,6 +318,10 @@ class MainClass:
                         self.pickedTrain = 1
                     if event.key == K_p:
                         self.simulaceON = False
+                    if event.key == K_g:
+                        self.makePaths.createOrders()
+                    if event.key == K_c:
+                        self.makePaths.ClearAll()
                         
                     
             if event.type == KEYUP:
@@ -599,6 +608,8 @@ class MainClass:
                 for g in range(12):
                     self.trainImages[-1].append(pygame.image.load("textures/"+self.settings[1]+"/trains/"+image[i][g+1]))
                     
+                    
+                                        
         
         
         
@@ -615,7 +626,7 @@ class MainClass:
                 images.append([1])
                 for g in range(12):
                     images[-1].append(lines[i+g+1])
-                                        
+                                            
         return images
                 
 mc = MainClass()
