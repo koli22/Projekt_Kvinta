@@ -129,8 +129,31 @@ class MakePaths:
                 path[2].append(path[1])
                 prom = self.railsXY[path[2][-1][0]][path[2][-1][1]]
                 if prom[0][0] != 0:
-                    self.paths.append(deepcopy(path))
-                    path[1] = [-1,-1]
+                    print (prom[0][0])
+                    if prom[0][0] == 1 or prom[0][0] == 3:
+                        if len(paths[-1][2]) > 1:
+                            if paths[-1][2][-2] == prom[1][0][0] and prom[0][1] == 0:
+                                self.paths.append(deepcopy(path))
+                                path[1] = [-1,-1]
+                            elif paths[-1][2][-2] == prom[1][1][0] and prom[0][1] == 1:
+                                self.paths.append(deepcopy(path))
+                                path[1] = [-1,-1]
+                            elif prom[0][0] == 1:
+                                for h in range(len(prom[1])):
+                                    if prom[1][h][0] == path[2][-2]:
+                                        paths.append(deepcopy(path))
+                                        paths[-1][1] = deepcopy(prom[1][h][1])
+                                        if paths[-1][2].count(paths[-1][1]) > 0 and self.rails[paths[-1][1][0]][paths[-1][1][1]][0] != 4:
+                                            paths[-1][1] = [-1,-1]
+                            
+                                path[1] = [-1,-1]
+                            elif prom[0][0] == 3:
+                                path[1] = [-1,-1]
+                                
+                    elif prom[0][0] == 2 or prom[0][0] == 4:
+                        self.paths.append(deepcopy(path))
+                        path[1] = [-1,-1]
+                        
                 elif prom[1] == []:
                     path[1] = [-1,-1]
                 else:
