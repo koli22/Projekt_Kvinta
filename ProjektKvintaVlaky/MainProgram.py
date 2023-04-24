@@ -253,10 +253,10 @@ class MainClass:
             square = self.positions[self.itoxy[self.clickedSquare[0]][self.clickedSquare[1]]]
             
             if square[1][0] == 3:
-                if self.pickedTrain == 0:
+                if self.pickedTrain == 0 and self.selectedSquares[0] != self.clickedSquare and self.selectedSquares[1] != self.clickedSquare:
                     self.selectedSquares[0] = self.clickedSquare
                     
-                else:
+                elif self.selectedSquares[0] != self.clickedSquare and self.selectedSquares[1] != self.clickedSquare:
                     self.selectedSquares[1] = self.clickedSquare
                     
                 if self.selectedSquares[0] != 0 and self.selectedSquares[1] != 0:
