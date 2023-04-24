@@ -17,6 +17,8 @@ class MakePaths:
         self.move = 0
         self.orders = []
         self.lastTime = 0
+        self.fullRails = []
+        self.lastMove = -1
         
     def NewMap(self,blocks):
         self.rails = []
@@ -129,13 +131,22 @@ class MakePaths:
                 path[2].append(path[1])
                 prom = self.railsXY[path[2][-1][0]][path[2][-1][1]]
                 if prom[0][0] != 0:
-                    print (prom[0][0])
                     if prom[0][0] == 1 or prom[0][0] == 3:
-                        if len(paths[-1][2]) > 1:
-                            if paths[-1][2][-2] == prom[1][0][0] and prom[0][1] == 0:
+                        if len(path[2]) > 1:
+                            if prom[0][1] == 0 and path[2][-1][1] > path[2][-2][1]:
+                                print(prom[1], "0")
                                 self.paths.append(deepcopy(path))
                                 path[1] = [-1,-1]
-                            elif paths[-1][2][-2] == prom[1][1][0] and prom[0][1] == 1:
+                            elif prom[0][1] == 1 and path[2][-1][1] < path[2][-2][1]:
+                                print(prom[1], "1")
+                                self.paths.append(deepcopy(path))
+                                path[1] = [-1,-1]
+                            elif prom[0][1] == 2 and path[2][-1][0] > path[2][-2][0]:
+                                print(prom[1], "2")
+                                self.paths.append(deepcopy(path))
+                                path[1] = [-1,-1]
+                            elif prom[0][1] == 3 and path[2][-1][0] < path[2][-2][0]:
+                                print(prom[1], "3")
                                 self.paths.append(deepcopy(path))
                                 path[1] = [-1,-1]
                             elif prom[0][0] == 1:
@@ -147,6 +158,7 @@ class MakePaths:
                                             paths[-1][1] = [-1,-1]
                             
                                 path[1] = [-1,-1]
+                                
                             elif prom[0][0] == 3:
                                 path[1] = [-1,-1]
                                 
@@ -298,13 +310,52 @@ class MakePaths:
         ret = []
         
         for order in self.orders:
+            if len(order) >= self.move + 1:
+                if (self.lastMove != self.move):
+                    try: 
+                        self.Odobsad(order[self.move - 1])
+                    except: 
+                        pass
+                        
+
+        for order in self.orders:
             if len(order) < self.move + 1:
                 ret.append(order[-1])
             else:
+                if (self.lastMove != self.move):
+                    if (self.Obsazeno(order[self.move])):
+                        self.Obsad(order[self.move - 1])
+                        order.insert(0, order[0])
+                    else:
+                        self.Obsad(order[self.move])
+                
                 ret.append(order[self.move])
                 
                 
+        if (self.lastMove != self.move):
+            self.lastMove = self.move
+                
         return ret
+    
+    def Obsazeno(self, poz):
+        
+        if self.fullRails.count([poz[0], poz[1]]) > 0:
+            return True
+        else: 
+            return False
+    
+    def Obsad(self, poz):
+        for path in self.paths:
+            if (path[2].count([poz[0], poz[1]]) > 0):
+                for _bit in path[2]:
+                    self.fullRails.append(deepcopy(_bit))
+    
+    def Odobsad(self, poz):
+        for path in self.paths:
+            if (path[2].count([poz[0], poz[1]]) > 0):
+                for _bit in path[2]:
+                    while self.fullRails.count(_bit) > 0:
+                        self.fullRails.remove(_bit)
             
             
     
@@ -377,9 +428,7 @@ class MakePaths:
                 else:
                     return [2, 6, 1, 7]  
             
-        print(_now, _next)
         if blok[0] == 5 and _now[0] != _next[0] and _now[1] != _next[1]:
-            print("tocna")
             if blok[1] == 0:
                 if prev == 7 or prev == 3:
                     return [4, 8, 5, 1]
